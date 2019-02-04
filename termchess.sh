@@ -1,5 +1,5 @@
 #!/bin/bash
-# TermChess v1.0
+# TermChess v1.1
 #Coded by @linux_choice
 # https://github.com/thelinuxchoice/termchess
 trap 'printf "\n";pgn;exit 1' 2
@@ -10,7 +10,7 @@ printf "\e[1;93m  _____                    ____ _                    \n"
 printf " |_   _|__ _ __ _ __ ___  / ___| |__   ___  ___ ___  \n"
 printf "   | |/ _ \ '__| '_ \` _ \| |   | '_ \ / _ \/ __/ __| \n"
 printf "   | |  __/ |  | | | | | | |___| | | |  __/\__ \__ \ \n"
-printf "   |_|\___|_|  |_| |_| |_|\____|_| |_|\___||___/___/ \e[0m\e[1;77mv1.0\n"
+printf "   |_|\___|_|  |_| |_| |_|\____|_| |_|\___||___/___/ \e[0m\e[1;77mv1.1\n"
 printf "\n"
 
 printf "   \e[1;77mcoded by: github.com/thelinuxchoice\e[0m\n"                                                  
@@ -169,33 +169,33 @@ in_draw=$(sed -n 3p result_check)
 insufficient=$(sed -n 4p result_check)
 checkmate=$(sed -n 5p result_check)
 
+if [[ $checkmate == *'true'* ]]; then
+printf "\e[1;93mCheckMate!\e[0m\n"
+echo -e '\a\a'
+pgn
+exit 1
+fi
 
 if [[ $in_check == *'true'* ]]; then
 printf "\e[1;93mCheck!\e[0m\n"
+echo -e '\a'
 fi
 
 if [[ $in_stalemate == *'true'* ]]; then
 printf "\e[1;93mStalemate!\e[0m\n"
-printf "\e[1;77mSaved: pgn.pgn\e[0m\n"
+pgn
 exit 1
 fi
 
 if [[ $in_draw == *'true'* ]]; then
 printf "\e[1;93mDraw!\e[0m\n"
-printf "\e[1;77mSaved: pgn.pgn\e[0m\n"
+pgn
 exit 1
 fi
 
 if [[ $insufficient == *'true'* ]]; then
 printf "\e[1;93mInsufficient Material!\e[0m\n"
-printf "\e[1;77mSaved: pgn.pgn\e[0m\n"
-exit 1
-fi
-
-
-if [[ $checkmate == *'true'* ]]; then
-printf "\e[1;93mCheckMate!\e[0m\n"
-printf "\e[1;77mSaved: pgn.pgn\e[0m\n"
+pgn
 exit 1
 fi
 
@@ -363,9 +363,9 @@ done
 
 
 elif [[ $color -eq 3 ]]; then
-printf "\e[1;77m[\e[0m\e[1;92m+\e[0m\e[1;77m] Random\e[0m\n"
+
 choice=$((RANDOM%2))
-echo $choice
+
 if [[ $choice -eq 0 ]]; then
 white=true
 first_move=true
