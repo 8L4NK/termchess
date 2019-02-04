@@ -387,7 +387,7 @@ printf "%s \e[1;77mYou Turn: \e[0m" $turn
 read move
 IFS=$'\n'
 fen=$(echo $(cat last_fen | cut -d ' ' -f1-3)" - 0 1")
-curl -i -s -k  -X $'POST'     -H $'Host: nextchessmove.com' -H $'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0' -H $'Accept: */*' -H $'Accept-Language: en-US,en;q=0.5' -H $'Accept-Encoding: gzip, deflate' -H $'Content-Type: application/x-www-form-urlencoded; charset=UTF-8'  --data-binary "engine=sf10&fen=$fen&position%5Bfen%5D=$fen&movetime=5&syzygy=false&uuid="     $'https://nextchessmove.com/api/v4/calculate' > next_move
+#curl -i -s -k  -X $'POST'     -H $'Host: nextchessmove.com' -H $'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0' -H $'Accept: */*' -H $'Accept-Language: en-US,en;q=0.5' -H $'Accept-Encoding: gzip, deflate' -H $'Content-Type: application/x-www-form-urlencoded; charset=UTF-8'  --data-binary "engine=sf10&fen=$fen&position%5Bfen%5D=$fen&movetime=5&syzygy=false&uuid="     $'https://nextchessmove.com/api/v4/calculate' > next_move
 echo $move >> move_history
 
 
@@ -441,7 +441,7 @@ printf "%s \e[1;77mYou Turn: \e[0m" $turn
 read move
 IFS=$'\n'
 fen=$(echo $(cat last_fen | cut -d ' ' -f1-3)" - 0 1")
-curl -i -s -k  -X $'POST'     -H $'Host: nextchessmove.com' -H $'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0' -H $'Accept: */*' -H $'Accept-Language: en-US,en;q=0.5' -H $'Accept-Encoding: gzip, deflate' -H $'Content-Type: application/x-www-form-urlencoded; charset=UTF-8'  --data-binary "engine=sf10&fen=$fen&position%5Bfen%5D=$fen&movetime=5&syzygy=false&uuid="     $'https://nextchessmove.com/api/v4/calculate' > next_move
+#curl -i -s -k  -X $'POST'     -H $'Host: nextchessmove.com' -H $'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0' -H $'Accept: */*' -H $'Accept-Language: en-US,en;q=0.5' -H $'Accept-Encoding: gzip, deflate' -H $'Content-Type: application/x-www-form-urlencoded; charset=UTF-8'  --data-binary "engine=sf10&fen=$fen&position%5Bfen%5D=$fen&movetime=5&syzygy=false&uuid="     $'https://nextchessmove.com/api/v4/calculate' > next_move
 echo $move >> move_history
 
 
