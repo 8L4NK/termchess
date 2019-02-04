@@ -20,6 +20,17 @@ printf "\n"
 
 }
 
+countp=0
+countP=0
+countb=0
+countB=0
+countn=0
+countN=0
+countq=0
+countQ=0
+countr=0
+countR=0
+
 
 dependencies() {
 
@@ -38,7 +49,7 @@ command -v cut > /dev/null 2>&1 || { echo >&2 "I require cut but it's not instal
 
 
 table() {
-start=true
+#start=true
 
 if [[ $first_move == true ]]; then
 node start.js | head -n10 > table
@@ -48,6 +59,93 @@ fi
 first_move=false
 #K=$(echo -e '\e[30m\e[107m\u2654\e[0m\e[0m') # King White
 #k=$(echo -e '\e[97m\e[40m\u2654\e[0m\e[0m')  # King Black
+
+# captured
+
+if [[ -e last_table ]]; then
+
+
+count_tp=$(grep -o 'p' table | wc -l)
+count_tP=$(grep -o 'P' table | wc -l)
+
+count_tq=$(grep -o 'q' table | wc -l)
+count_tQ=$(grep -o 'Q' table | wc -l)
+
+count_tr=$(grep -o 'r' table | wc -l)
+count_tR=$(grep -o 'R' table | wc -l)
+
+count_tn=$(grep -o 'n' table | wc -l)
+count_tN=$(grep -o 'N' table | wc -l)
+
+count_tb=$(grep -o 'b' table | wc -l)
+count_tB=$(grep -o 'B' table | wc -l)
+
+
+count_p=$(grep -o 'p' last_table | wc -l)
+count_P=$(grep -o 'P' last_table | wc -l)
+
+count_q=$(grep -o 'q' last_table | wc -l)
+count_Q=$(grep -o 'Q' last_table | wc -l)
+
+count_r=$(grep -o 'r' last_table | wc -l)
+count_R=$(grep -o 'R' last_table | wc -l)
+
+count_n=$(grep -o 'n' last_table | wc -l)
+count_N=$(grep -o 'N' last_table | wc -l)
+
+count_b=$(grep -o 'b' last_table | wc -l)
+count_B=$(grep -o 'B' last_table | wc -l)
+
+#Pawn Black
+if [[ $count_tp < $count_p ]]; then
+let countp+=1
+fi
+# Pawn W
+if [[ $count_tP < $count_P ]]; then
+let countP+=1
+fi
+# Bishop
+if [[ $count_tb < $count_b ]]; then
+let countb+=1
+fi
+
+if [[ $count_tB < $count_B ]]; then
+let countB+=1
+fi
+
+
+# N
+
+if [[ $count_tn < $count_n ]]; then
+let countn+=1
+fi
+
+if [[ $count_tN < $count_N ]]; then
+let countN+=1
+fi
+
+
+# Q
+
+if [[ $count_tq < $count_q ]]; then
+let countq+=1
+fi
+
+if [[ $count_tQ < $count_Q ]]; then
+let countQ+=1
+fi
+
+# R
+
+if [[ $count_tr < $count_R ]]; then
+let countr+=1
+fi
+
+if [[ $count_tR < $count_R ]]; then
+let countR+=1
+fi
+
+fi
 
 K=$(echo -e '\u2654') # King White
 k=$(echo -e '\u265A')  # King Black
@@ -67,10 +165,85 @@ n=$(echo -e '\u265E')
 P=$(echo -e '\u2659')
 p=$(echo -e '\u265F')
 
+# Black Captures
+
+#P
+if [[ $countP > 0 ]]; then #black captures white pawn
+Pawn=$(printf "\u2659x%s\n" $countP)
+#printf "%s \n" $Pawn
+fi
+#B
+if [[ $countB > 0 ]]; then #white captures white bishop
+Bishop=$(printf "\u2657x%s\n" $countB)
+#printf "%s \n" $bishop
+fi
+
+#N Knight
+if [[ $countN > 0 ]]; then 
+Nnight=$(printf "\u2658x%s\n" $countN)
+
+fi
+
+#Q
+if [[ $countQ > 0 ]]; then 
+Queen=$(printf "\u2655x%s\n" $countQ)
+
+fi
+
+#R
+
+if [[ $countR > 0 ]]; then 
+Rook=$(printf "\u2656x%s\n" $countR)
+
+fi
+
+
+printf "    %s %s %s %s %s\n" $Queen $Rook $Nnight $Bishop $Pawn
+
+
+# Table
 sed 's+K+'$K'+g' table | sed 's+k+'$k'+g' | sed 's+Q+'$Q'+g' | sed 's+q+'$q'+g' | sed 's+R+'$R'+g' | sed 's+r+'$r'+g' | sed 's+B+'$B'+g' | sed 's+b+'$b'+g' | sed 's+N+'$N'+g' | sed 's+n+'$n'+g' | sed 's+P+'$P'+g' | sed 's+p+'$p'+g'
 echo '     a  b  c  d  e  f  g  h '
 printf "\n"
 
+
+# White Captures
+
+
+if [[ $countp > 0 ]]; then #white captures black pawn
+pawn=$(printf "\u265Fx%s\n" $countp)
+
+fi
+
+#b
+if [[ $countb > 0 ]]; then #white captures black pawn
+bishop=$(printf "\u265Dx%s\n" $countb)
+
+fi
+
+#n knight
+if [[ $countn > 0 ]]; then 
+nnight=$(printf "\u265Ex%s\n" $countn)
+
+fi
+
+#q
+if [[ $countq > 0 ]]; then 
+queen=$(printf "\u265Bx%s\n" $countq)
+
+fi
+
+#r
+
+if [[ $countr > 0 ]]; then 
+rook=$(printf "\u265Cx%s\n" $countr)
+
+fi
+
+
+printf "    %s %s %s %s %s\n" $queen $rook $nnight $bishop $pawn
+
+cat table > last_table
 }
 
 pgn() {
@@ -122,6 +295,10 @@ if [[ -e table ]]; then
 rm -rf table
 fi
 
+if [[ -e last_table ]]; then
+rm -rf last_table
+fi
+
 if [[ -e next_move ]]; then
 rm -rf next_move
 fi
@@ -171,7 +348,7 @@ checkmate=$(sed -n 5p result_check)
 
 if [[ $checkmate == *'true'* ]]; then
 printf "\e[1;93mCheckMate!\e[0m\n"
-echo -e '\a\a'
+echo -e '\a'; sleep 0.1 ; echo -e '\a'
 pgn
 exit 1
 fi
@@ -334,7 +511,7 @@ gturn=$(cat last_fen | cut -d ' ' -f2)
 if [[ $gturn == *'b'* ]]; then
 turn=$(echo -e '\u265A')
 else
-turn=$(echo -e '\u2655')
+turn=$(echo -e '\u2654')
 fi
 black
 white
@@ -355,7 +532,7 @@ gturn=$(cat last_fen | cut -d ' ' -f2)
 if [[ $gturn == *'w'* ]]; then
 turn=$(echo -e '\u265A')
 else
-turn=$(echo -e '\u2655')
+turn=$(echo -e '\u2654')
 fi
 white
 black
@@ -389,14 +566,14 @@ gturn=$(cat last_fen | cut -d ' ' -f2)
 if [[ $gturn == *'b'* ]]; then
 turn=$(echo -e '\u265A')
 else
-turn=$(echo -e '\u2655')
+turn=$(echo -e '\u2654')
 fi
 
 $first
 if [[ $gturn == *'w'* ]]; then
 turn=$(echo -e '\u265A')
 else
-turn=$(echo -e '\u2655')
+turn=$(echo -e '\u2654')
 fi
 $second
 done
