@@ -32,9 +32,9 @@ var minimax = function (depth, game, alpha, beta, isMaximisingPlayer) {
     if (isMaximisingPlayer) {
         var bestMove = -9999;
         for (var i = 0; i < newGameMoves.length; i++) {
-//            game.move(newGameMoves[i]);
+            game.move(newGameMoves[i]);
             bestMove = Math.max(bestMove, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer));
-//            game.undo();
+            game.undo();
             alpha = Math.max(alpha, bestMove);
             if (beta <= alpha) {
                 return bestMove;
@@ -45,9 +45,9 @@ var minimax = function (depth, game, alpha, beta, isMaximisingPlayer) {
     } else {
         var bestMove = 9999;
         for (var i = 0; i < newGameMoves.length; i++) {
-//            game.move(newGameMoves[i]);
+            game.move(newGameMoves[i]);
             bestMove = Math.min(bestMove, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer));
-//            game.undo();
+            game.undo();
 
             beta = Math.min(beta, bestMove);
             if (beta <= alpha) {
