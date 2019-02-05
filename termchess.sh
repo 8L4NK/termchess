@@ -1,6 +1,6 @@
 #!/bin/bash
-# TermChess v1.1
-#Coded by @linux_choice
+# TermChess v1.2
+# Coded by @linux_choice
 # https://github.com/thelinuxchoice/termchess
 trap 'printf "\n";pgn;exit 1' 2
 
@@ -10,7 +10,7 @@ printf "\e[1;93m  _____                    ____ _                    \n"
 printf " |_   _|__ _ __ _ __ ___  / ___| |__   ___  ___ ___  \n"
 printf "   | |/ _ \ '__| '_ \` _ \| |   | '_ \ / _ \/ __/ __| \n"
 printf "   | |  __/ |  | | | | | | |___| | | |  __/\__ \__ \ \n"
-printf "   |_|\___|_|  |_| |_| |_|\____|_| |_|\___||___/___/ \e[0m\e[1;77mv1.1\n"
+printf "   |_|\___|_|  |_| |_| |_|\____|_| |_|\___||___/___/ \e[0m\e[1;77mv1.2\n"
 printf "\n"
 
 printf "   \e[1;77mcoded by: github.com/thelinuxchoice\e[0m\n"                                                  
@@ -49,7 +49,6 @@ command -v cut > /dev/null 2>&1 || { echo >&2 "I require cut but it's not instal
 
 
 table() {
-#start=true
 
 if [[ $first_move == true ]]; then
 node start.js | head -n10 > table
@@ -386,8 +385,7 @@ if [[ $white == false ]]; then
 printf "%s \e[1;77mYou Turn: \e[0m" $turn
 read move
 IFS=$'\n'
-fen=$(echo $(cat last_fen | cut -d ' ' -f1-3)" - 0 1")
-#curl -i -s -k  -X $'POST'     -H $'Host: nextchessmove.com' -H $'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0' -H $'Accept: */*' -H $'Accept-Language: en-US,en;q=0.5' -H $'Accept-Encoding: gzip, deflate' -H $'Content-Type: application/x-www-form-urlencoded; charset=UTF-8'  --data-binary "engine=sf10&fen=$fen&position%5Bfen%5D=$fen&movetime=5&syzygy=false&uuid="     $'https://nextchessmove.com/api/v4/calculate' > next_move
+
 echo $move >> move_history
 
 
@@ -440,8 +438,6 @@ if [[ $white == true ]]; then
 printf "%s \e[1;77mYou Turn: \e[0m" $turn
 read move
 IFS=$'\n'
-fen=$(echo $(cat last_fen | cut -d ' ' -f1-3)" - 0 1")
-#curl -i -s -k  -X $'POST'     -H $'Host: nextchessmove.com' -H $'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0' -H $'Accept: */*' -H $'Accept-Language: en-US,en;q=0.5' -H $'Accept-Encoding: gzip, deflate' -H $'Content-Type: application/x-www-form-urlencoded; charset=UTF-8'  --data-binary "engine=sf10&fen=$fen&position%5Bfen%5D=$fen&movetime=5&syzygy=false&uuid="     $'https://nextchessmove.com/api/v4/calculate' > next_move
 echo $move >> move_history
 
 
@@ -484,17 +480,119 @@ check_position
 
 }
 
+engine_black() {
+
+if [[ $white == true ]]; then
+
+printf "%s \e[1;77mYou Turn: \e[0m" $turn
+read move
+echo $move >> move_history
+
+else
+IFS=$'\n'
+fen=$(echo $(cat last_fen ))
+
+sed 's+get_fen+'$fen'+g' alpha.js | sed 's+get_level+'$level'+g' > engine1.js 
+move=$(node engine1.js) #>> move_history
+
+printf "\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n" $move
+echo $move >> move_history
+
+fi 
+
+echo "var Chess = require('./chessjs/chess').Chess;" > history_pgn
+echo "var chess = new Chess();" >> history_pgn
+
+for position in $(cat move_history); do
+printf "chess.move('%s', {sloppy: true});\n" $position >> history_pgn
+done
+echo "console.log(chess.ascii());" >> history_pgn
+echo "console.log(chess.fen());" >> history_pgn
+
+table
+
+echo "var Chess = require('./chessjs/chess').Chess;" > gen_fen
+echo "var chess = new Chess();" >> gen_fen
+
+for position in $(cat move_history); do
+printf "chess.move('%s', {sloppy: true});\n" $position >> gen_fen
+done
+echo "console.log(chess.fen());" >> gen_fen
+node gen_fen > last_fen
+
+check_position
+
+
+}
+
+
+engine_white() {
+
+if [[ $white == false ]]; then
+
+printf "%s \e[1;77mYou Turn: \e[0m" $turn
+read move
+echo $move >> move_history
+
+
+else
+
+IFS=$'\n'
+fen=$(echo $(cat last_fen ))
+sed 's+get_fen+'$fen'+g' alpha.js | sed 's+get_level+'$level'+g' > engine1.js 
+move=$(node engine1.js)
+
+printf "\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n" $move
+echo $move >> move_history
+
+fi 
+
+echo "var Chess = require('./chessjs/chess').Chess;" > history_pgn
+echo "var chess = new Chess();" >> history_pgn
+
+for position in $(cat move_history); do
+printf "chess.move('%s', {sloppy: true});\n" $position >> history_pgn
+done
+echo "console.log(chess.ascii());" >> history_pgn
+echo "console.log(chess.fen());" >> history_pgn
+
+table
+
+echo "var Chess = require('./chessjs/chess').Chess;" > gen_fen
+echo "var chess = new Chess();" >> gen_fen
+
+for position in $(cat move_history); do
+printf "chess.move('%s', {sloppy: true});\n" $position >> gen_fen
+done
+echo "console.log(chess.fen());" >> gen_fen
+node gen_fen > last_fen
+
+check_position
+
+
+
+}
+
 start() {
 
 touch last_fen
 rm -rf move_history
 printf "\n"
+printf "\e[1;93mStockFish Engine (Online)\n\n"
 printf "\e[1;93m1.\e[0m\e[1;77m White\e[0m \u2654\n"
 printf "\e[1;93m2.\e[0m\e[1;77m Black\e[0m \u265A\n"
 printf "\e[1;93m3.\e[0m\e[1;77m Random\e[0m \u2654 \u265A\n"
-printf "\e[1;93m4.\e[0m\e[1;77m AI x AI (StockFish)\e[0m\n"
-printf "\e[1;93m5. Help\e[0m\n"
-printf "\e[1;93m6.\e[0m\e[1;77m Exit\e[0m\n"
+printf "\e[1;93m4.\e[0m\e[1;77m AI x AI\e[0m\n"
+
+printf "\n\e[1;93mMiniMax-Alpha Engine (Offline) \e[0m\n\n"
+
+printf "\e[1;93m5.\e[0m\e[1;77m White\e[0m \u2654\n"
+printf "\e[1;93m6.\e[0m\e[1;77m Black\e[0m \u265A\n"
+printf "\e[1;93m7.\e[0m\e[1;77m AI x AI\e[0m\n"
+printf "\n"
+printf "\e[1;93m99. Help\e[0m\n"
+
+printf "\e[1;93m0.\e[0m\e[1;77m Exit\e[0m\n"
 
 printf "\n\e[1;77mChoose: \e[0m"
 read color
@@ -589,7 +687,7 @@ white
 black
 done
 
-elif [[ $color -eq 5 ]]; then
+elif [[ $color -eq 99 ]]; then
 
 printf "\n\n\e[1;93mMoves:\n\n\e[0m"
 
@@ -610,7 +708,76 @@ printf "\n\e[1;77mBack (Hit Enter)"
 read back
 start
 
+#
+elif [[ $color -eq 7 ]]; then
+
+default_level="3"
+printf "\e[1;93mLevel\e[0m\e[1;77m (1-3): \e[0m"
+read level
+level="${level:-${default_level}}"
+echo "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" > last_fen
+
+while [ true ]; do
+
+engine_white
+engine_black
+done
+
+#
+
+#
+elif [[ $color -eq 5 ]]; then
+default_level="1"
+printf "\e[1;93mLevel\e[0m\e[1;77m (1-3): \e[0m"
+read level
+level="${level:-${default_level}}"
+first_move=true
+
+table
+white=true
+
+while [ true ]; do
+gturn=$(cat last_fen | cut -d ' ' -f2)
+if [[ $gturn == *'b'* ]]; then
+turn=$(echo -e '\u265A')
+else
+turn=$(echo -e '\u2654')
+fi
+engine_black
+engine_white
+done
+
+#
+
+#
+
 elif [[ $color -eq 6 ]]; then
+default_level="1"
+printf "\e[1;93mLevel\e[0m\e[1;77m (1-3): \e[0m"
+read level
+level="${level:-${default_level}}"
+
+printf "\n\u2654 \e[1;93mWhite begins, please wait...\e[0m\n"
+white=true
+
+echo "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" > last_fen
+
+while [ true ]; do
+
+gturn=$(cat last_fen | cut -d ' ' -f2)
+
+if [[ $gturn == *'w'* ]]; then
+turn=$(echo -e '\u265A')
+else
+turn=$(echo -e '\u2654')
+fi
+engine_white
+engine_black
+done
+
+
+#
+elif [[ $color -eq 0 ]]; then
 exit 1
 fi
 
