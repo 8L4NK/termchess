@@ -137,7 +137,7 @@ fi
 
 # R
 
-if [[ $count_tr < $count_R ]]; then
+if [[ $count_tr < $count_r ]]; then
 let countr+=1
 fi
 
