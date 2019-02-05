@@ -1,8 +1,6 @@
-//Reference: https://medium.freecodecamp.org/simple-chess-ai-step-by-step-1d55a9266977
-
-
 var Chess = require('./chessjs/chess').Chess;
 var game = new Chess('get_fen');
+
 
 var minimaxRoot =function(depth, game, isMaximisingPlayer) {
 
@@ -21,9 +19,8 @@ var minimaxRoot =function(depth, game, isMaximisingPlayer) {
         }
     }
     return bestMoveFound;
-
 };
-var positionCount=0
+
 var minimax = function (depth, game, alpha, beta, isMaximisingPlayer) {
     positionCount++;
     if (depth === 0) {
@@ -41,7 +38,6 @@ var minimax = function (depth, game, alpha, beta, isMaximisingPlayer) {
             alpha = Math.max(alpha, bestMove);
             if (beta <= alpha) {
                 return bestMove;
-
             }
         }
         return bestMove;
@@ -51,15 +47,12 @@ var minimax = function (depth, game, alpha, beta, isMaximisingPlayer) {
             game.move(newGameMoves[i]);
             bestMove = Math.min(bestMove, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer));
             game.undo();
-
             beta = Math.min(beta, bestMove);
             if (beta <= alpha) {
                 return bestMove;
-
             }
         }
         return bestMove;
-
     }
 };
 
@@ -73,31 +66,122 @@ var evaluateBoard = function (board) {
     return totalEvaluation;
 };
 
+var reverseArray = function(array) {
+    return array.slice().reverse();
+};
+
+var pawnEvalWhite =
+    [
+        [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
+        [5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0],
+        [1.0,  1.0,  2.0,  3.0,  3.0,  2.0,  1.0,  1.0],
+        [0.5,  0.5,  1.0,  2.5,  2.5,  1.0,  0.5,  0.5],
+        [0.0,  0.0,  0.0,  2.0,  2.0,  0.0,  0.0,  0.0],
+        [0.5, -0.5, -1.0,  0.0,  0.0, -1.0, -0.5,  0.5],
+        [0.5,  1.0, 1.0,  -2.0, -2.0,  1.0,  1.0,  0.5],
+        [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
+    ];
+
+var pawnEvalBlack = reverseArray(pawnEvalWhite);
+
+var knightEval =
+    [
+        [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0],
+        [-4.0, -2.0,  0.0,  0.0,  0.0,  0.0, -2.0, -4.0],
+        [-3.0,  0.0,  1.0,  1.5,  1.5,  1.0,  0.0, -3.0],
+        [-3.0,  0.5,  1.5,  2.0,  2.0,  1.5,  0.5, -3.0],
+        [-3.0,  0.0,  1.5,  2.0,  2.0,  1.5,  0.0, -3.0],
+        [-3.0,  0.5,  1.0,  1.5,  1.5,  1.0,  0.5, -3.0],
+        [-4.0, -2.0,  0.0,  0.5,  0.5,  0.0, -2.0, -4.0],
+        [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0]
+    ];
+
+var bishopEvalWhite = [
+    [ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0],
+    [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
+    [ -1.0,  0.0,  0.5,  1.0,  1.0,  0.5,  0.0, -1.0],
+    [ -1.0,  0.5,  0.5,  1.0,  1.0,  0.5,  0.5, -1.0],
+    [ -1.0,  0.0,  1.0,  1.0,  1.0,  1.0,  0.0, -1.0],
+    [ -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, -1.0],
+    [ -1.0,  0.5,  0.0,  0.0,  0.0,  0.0,  0.5, -1.0],
+    [ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0]
+];
+
+var bishopEvalBlack = reverseArray(bishopEvalWhite);
+
+var rookEvalWhite = [
+    [  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
+    [  0.5,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.5],
+    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+    [  0.0,   0.0, 0.0,  0.5,  0.5,  0.0,  0.0,  0.0]
+];
+
+var rookEvalBlack = reverseArray(rookEvalWhite);
+
+var evalQueen =
+    [
+    [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0],
+    [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
+    [ -1.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
+    [ -0.5,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
+    [  0.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
+    [ -1.0,  0.5,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
+    [ -1.0,  0.0,  0.5,  0.0,  0.0,  0.0,  0.0, -1.0],
+    [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0]
+];
+
+var kingEvalWhite = [
+
+    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+    [ -2.0, -3.0, -3.0, -4.0, -4.0, -3.0, -3.0, -2.0],
+    [ -1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0],
+    [  2.0,  2.0,  0.0,  0.0,  0.0,  0.0,  2.0,  2.0 ],
+    [  2.0,  3.0,  1.0,  0.0,  0.0,  1.0,  3.0,  2.0 ]
+];
+
+var kingEvalBlack = reverseArray(kingEvalWhite);
+
+
+
 
 var getPieceValue = function (piece, x, y) {
     if (piece === null) {
         return 0;
     }
-    var getAbsoluteValue = function (piece) {
+    var getAbsoluteValue = function (piece, isWhite, x ,y) {
         if (piece.type === 'p') {
-            return 10;
+            return 10 + ( isWhite ? pawnEvalWhite[y][x] : pawnEvalBlack[y][x] );
         } else if (piece.type === 'r') {
-            return 50;
+            return 50 + ( isWhite ? rookEvalWhite[y][x] : rookEvalBlack[y][x] );
         } else if (piece.type === 'n') {
-            return 30;
+            return 30 + knightEval[y][x];
         } else if (piece.type === 'b') {
-            return 30;
+            return 30 + ( isWhite ? bishopEvalWhite[y][x] : bishopEvalBlack[y][x] );
         } else if (piece.type === 'q') {
-            return 90;
+            return 90 + evalQueen[y][x];
         } else if (piece.type === 'k') {
-            return 900;
+            return 900 + ( isWhite ? kingEvalWhite[y][x] : kingEvalBlack[y][x] );
         }
         throw "Unknown piece type: " + piece.type;
     };
 
-    var absoluteValue = getAbsoluteValue(piece);
+    var absoluteValue = getAbsoluteValue(piece, piece.color === 'w', x ,y);
     return piece.color === 'w' ? absoluteValue : -absoluteValue;
 };
 
 
+var positionCount;
+positionCount = 0;
+//var positionsPerS = ( positionCount * 1000 / moveTime);
+//var d = new Date().getTime();
 console.log(minimaxRoot(get_level,game, true));
+//var d2 = new Date().getTime();
+//var moveTime = (d2 - d);
+//console.log(moveTime);
