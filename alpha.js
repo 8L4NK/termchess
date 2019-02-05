@@ -1,3 +1,6 @@
+//Reference: https://medium.freecodecamp.org/simple-chess-ai-step-by-step-1d55a9266977
+
+
 var Chess = require('./chessjs/chess').Chess;
 var game = new Chess('get_fen');
 
