@@ -653,7 +653,7 @@ check_position
 
 stockfish_path() {
 chmod +x engine/Linux/*
-arch=$(arch)
+arch=$(uname -m)
 
 if [[ $arch == *'armv'* ]]; then
 chmod +x engine/Android/*
