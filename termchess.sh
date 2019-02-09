@@ -782,7 +782,7 @@ start() {
 touch last_fen
 rm -rf move_history
 printf "\n"
-printf "\e[1;93mStockFish Engine (AI Offline)     StockFish 10 (AI Online)\n\n"
+printf "\e[1;93mStockFish Engine (AI Offline)   StockFish 10 (AI Online)\n\n"
 printf "\e[1;93m01.\e[0m\e[1;77m White\e[0m \u2654                     \e[1;93m05.\e[0m\e[1;77m White\e[0m \u2654\n"
 printf "\e[1;93m02.\e[0m\e[1;77m Black\e[0m \u265A                     \e[1;93m06.\e[0m\e[1;77m Black\e[0m \u265A\n"
 printf "\e[1;93m03.\e[0m\e[1;77m Random\e[0m \u2654 \u265A                  \e[1;93m07.\e[0m\e[1;77m Random\e[0m \u2654 \u265A\n"
