@@ -1,5 +1,5 @@
 #!/bin/bash
-# TermChess v1.2
+# TermChess v1.3
 # Coded by @linux_choice
 # https://github.com/thelinuxchoice/termchess
 trap 'printf "\n";pgn;exit 1' 2
@@ -10,10 +10,10 @@ printf "\e[1;93m  _____                    ____ _                    \n"
 printf " |_   _|__ _ __ _ __ ___  / ___| |__   ___  ___ ___  \n"
 printf "   | |/ _ \ '__| '_ \` _ \| |   | '_ \ / _ \/ __/ __| \n"
 printf "   | |  __/ |  | | | | | | |___| | | |  __/\__ \__ \ \n"
-printf "   |_|\___|_|  |_| |_| |_|\____|_| |_|\___||___/___/ \e[0m\e[1;77mv1.2\n"
+printf "   |_|\___|_|  |_| |_| |_|\____|_| |_|\___||___/___/ \e[0m\n"
 printf "\n"
 
-printf "   \e[1;77mcoded by: github.com/thelinuxchoice\e[0m\n"                                                  
+printf "    \e[1;77mv1.3 by: github.com/thelinuxchoice/termchess\e[0m\n"
 printf "\n"
 
 
@@ -36,8 +36,6 @@ dependencies() {
 
 
 command -v curl > /dev/null 2>&1 || { echo >&2 "I require curl but it's not installed. Run ./install.sh. Aborting."; exit 1; }
-
-
 command -v node > /dev/null 2>&1 || { echo >&2 "I require node but it's not installed. Aborting."; exit 1; }
 command -v sed > /dev/null 2>&1 || { echo >&2 "I require sed but it's not installed. Aborting."; exit 1; }
 command -v cat > /dev/null 2>&1 || { echo >&2 "I require cat but it's not installed. Aborting."; exit 1; }
@@ -53,7 +51,7 @@ table() {
 if [[ $first_move == true ]]; then
 node start.js | head -n10 > table
 else
-node history_pgn | head -n10 > table
+head -n10 history.txt > table
 fi
 first_move=false
 #K=$(echo -e '\e[30m\e[107m\u2654\e[0m\e[0m') # King White
@@ -169,12 +167,10 @@ p=$(echo -e '\u265F')
 #P
 if [[ $countP > 0 ]]; then #black captures white pawn
 Pawn=$(printf "\u2659x%s\n" $countP)
-#printf "%s \n" $Pawn
 fi
 #B
 if [[ $countB > 0 ]]; then #white captures white bishop
 Bishop=$(printf "\u2657x%s\n" $countB)
-#printf "%s \n" $bishop
 fi
 
 #N Knight
@@ -196,7 +192,6 @@ Rook=$(printf "\u2656x%s\n" $countR)
 
 fi
 
-
 printf "    %s %s %s %s %s\n" $Queen $Rook $Nnight $Bishop $Pawn
 
 
@@ -207,7 +202,6 @@ printf "\n"
 
 
 # White Captures
-
 
 if [[ $countp > 0 ]]; then #white captures black pawn
 pawn=$(printf "\u265Fx%s\n" $countp)
@@ -247,6 +241,7 @@ cat table > last_table
 
 pgn() {
 
+printf "\e[1;93mGenerating PGN...\e[0m\n"
 if [[ -e move_history ]]; then
 echo "var Chess = require('./chessjs/chess').Chess;" > pgn_match
 echo "var chess = new Chess();" >> pgn_match
@@ -258,16 +253,17 @@ node pgn_match > pgn.pgn
 printf "\e[1;77mSaved: pgn.pgn\e[0m\n"
 fi
 
+if [[ -e history.txt ]]; then
+rm -rf history.txt
+fi
+
+
 if [[ -e history_pgn ]]; then
 rm -rf history_pgn
 fi
 
 if [[ -e move_history ]]; then
 rm -rf move_history
-fi
-
-if [[ -e checkposition.js  ]]; then
-rm -rf checkposition.js
 fi
 
 if [[ -e gen_fen ]]; then
@@ -280,14 +276,6 @@ fi
 
 if [[ -e pgn_match ]]; then
 rm -rf pgn_match
-fi
-
-if [[ -e repetition ]]; then
-rm -rf repetition
-fi
-
-if [[ -e result_check ]]; then
-rm -rf result_check
 fi
 
 if [[ -e table ]]; then
@@ -304,46 +292,17 @@ fi
 
 }
 
-check_threefold() {
-
-echo "var Chess = require('./chessjs/chess').Chess;" > repetition
-echo "var chess = new Chess();" >> repetition
-
-for position in $(cat move_history); do
-printf "chess.move('%s', {sloppy: true});\n" $position >> repetition
-done
-echo "console.log(chess.in_threefold_repetition());" >> repetition
-
-if [[ $(node repetition) == *'true'* ]]; then
-printf "\e[1;93mRepetition, Draw!\e[0m\n"
-printf "\e[1;77mSaved: pgn.pgn\e[0m\n"
-exit 1
-fi
-
-
-}
 
 check_position() {
 
-check_threefold
 IFS=$'\n'
-last_fen=$(cat last_fen)
 
-echo "var Chess = require('./chessjs/chess').Chess;" > checkposition.js
-echo "var chess = new Chess();" >> checkposition.js
-IFS=$'\n'
-printf "chess.load('%s');\n" $last_fen >> checkposition.js
-echo "console.log(chess.in_check());" >> checkposition.js
-echo "console.log(chess.in_stalemate());" >> checkposition.js
-echo "console.log(chess.in_draw());" >> checkposition.js
-echo "console.log(chess.insufficient_material());" >> checkposition.js
-echo "console.log(chess.in_checkmate());" >> checkposition.js
-node checkposition.js > result_check
-in_check=$(sed -n 1p result_check)
-in_stalemate=$(sed -n 2p result_check)
-in_draw=$(sed -n 3p result_check)
-insufficient=$(sed -n 4p result_check)
-checkmate=$(sed -n 5p result_check)
+in_check=$(sed -n 14p history.txt)
+in_stalemate=$(sed -n 16p history.txt)
+#in_draw=$(sed -n 3p history.txt)
+insufficient=$(sed -n 17p history.txt)
+checkmate=$(sed -n 15p history.txt)
+repetition=$(sed -n 18p history.txt)
 
 if [[ $checkmate == *'true'* ]]; then
 printf "\e[1;93mCheckMate!\e[0m\n"
@@ -375,6 +334,11 @@ pgn
 exit 1
 fi
 
+if [[ $repetition == *'true'* ]]; then
+printf "\e[1;93mRepetition, Draw!\e[0m\n"
+pgn
+exit 1
+fi
 
 }
 
@@ -404,7 +368,7 @@ echo $move >> move_history
 fi
 
 
-printf "\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n" $move
+printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n\n" $move
 
 echo "var Chess = require('./chessjs/chess').Chess;" > history_pgn
 echo "var chess = new Chess();" >> history_pgn
@@ -415,17 +379,20 @@ done
 echo "console.log(chess.ascii());" >> history_pgn
 echo "console.log(chess.fen());" >> history_pgn
 
+##
+echo "console.log(chess.in_check());" >> history_pgn
+echo "console.log(chess.in_checkmate());" >> history_pgn
+echo "console.log(chess.in_stalemate());" >> history_pgn
+echo "console.log(chess.insufficient_material());" >> history_pgn
+echo "console.log(chess.in_threefold_repetition());" >> history_pgn
+#echo "console.log(chess.in_draw());" >> history_pgn
+
+
+
+##
+node history_pgn > history.txt
 table
-
-echo "var Chess = require('./chessjs/chess').Chess;" > gen_fen
-echo "var chess = new Chess();" >> gen_fen
-
-for position in $(cat move_history); do
-printf "chess.move('%s', {sloppy: true});\n" $position >> gen_fen
-done
-echo "console.log(chess.fen());" >> gen_fen
-node gen_fen > last_fen
-
+sed -n 13p history.txt > last_fen
 check_position
 
 
@@ -451,7 +418,7 @@ move=$(grep -o '"move":"[a-zA-Z0-9]\{5\}' next_move | cut -d ':' -f2 | tr -d '"'
 if [[ $move == "" ]]; then
 move=$(grep -o '"move":"[a-zA-Z0-9]\{4\}' next_move | cut -d ':' -f2 | tr -d '"')
 fi
-printf "\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n" $move
+printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n\n" $move
 echo $move >> move_history
 
 fi 
@@ -465,17 +432,20 @@ done
 echo "console.log(chess.ascii());" >> history_pgn
 echo "console.log(chess.fen());" >> history_pgn
 
+##
+echo "console.log(chess.in_check());" >> history_pgn
+echo "console.log(chess.in_checkmate());" >> history_pgn
+echo "console.log(chess.in_stalemate());" >> history_pgn
+echo "console.log(chess.insufficient_material());" >> history_pgn
+echo "console.log(chess.in_threefold_repetition());" >> history_pgn
+#echo "console.log(chess.in_draw());" >> history_pgn
+
+##
+
+node history_pgn > history.txt
 table
 
-echo "var Chess = require('./chessjs/chess').Chess;" > gen_fen
-echo "var chess = new Chess();" >> gen_fen
-
-for position in $(cat move_history); do
-printf "chess.move('%s', {sloppy: true});\n" $position >> gen_fen
-done
-echo "console.log(chess.fen());" >> gen_fen
-node gen_fen > last_fen
-
+sed -n 13p history.txt > last_fen
 check_position
 
 }
@@ -495,7 +465,7 @@ fen=$(echo $(cat last_fen ))
 sed 's+get_fen+'$fen'+g' alpha.js | sed 's+get_level+'$level'+g' > engine1.js 
 move=$(node engine1.js) #>> move_history
 
-printf "\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n" $move
+printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n\n" $move
 echo $move >> move_history
 
 fi 
@@ -509,17 +479,22 @@ done
 echo "console.log(chess.ascii());" >> history_pgn
 echo "console.log(chess.fen());" >> history_pgn
 
+##
+echo "console.log(chess.in_check());" >> history_pgn
+echo "console.log(chess.in_checkmate());" >> history_pgn
+echo "console.log(chess.in_stalemate());" >> history_pgn
+echo "console.log(chess.insufficient_material());" >> history_pgn
+echo "console.log(chess.in_threefold_repetition());" >> history_pgn
+#echo "console.log(chess.in_draw());" >> history_pgn
+
+
+
+##
+
+node history_pgn > history.txt
 table
 
-echo "var Chess = require('./chessjs/chess').Chess;" > gen_fen
-echo "var chess = new Chess();" >> gen_fen
-
-for position in $(cat move_history); do
-printf "chess.move('%s', {sloppy: true});\n" $position >> gen_fen
-done
-echo "console.log(chess.fen());" >> gen_fen
-node gen_fen > last_fen
-
+sed -n 13p history.txt > last_fen
 check_position
 
 
@@ -542,7 +517,7 @@ fen=$(echo $(cat last_fen ))
 sed 's+get_fen+'$fen'+g' alpha.js | sed 's+get_level+'$level'+g' > engine1.js 
 move=$(node engine1.js)
 
-printf "\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n" $move
+printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n\n" $move
 echo $move >> move_history
 
 fi 
@@ -556,19 +531,185 @@ done
 echo "console.log(chess.ascii());" >> history_pgn
 echo "console.log(chess.fen());" >> history_pgn
 
+##
+echo "console.log(chess.in_check());" >> history_pgn
+echo "console.log(chess.in_checkmate());" >> history_pgn
+echo "console.log(chess.in_stalemate());" >> history_pgn
+echo "console.log(chess.insufficient_material());" >> history_pgn
+echo "console.log(chess.in_threefold_repetition());" >> history_pgn
+#echo "console.log(chess.in_draw());" >> history_pgn
+
+##
+
+node history_pgn > history.txt
 table
 
-echo "var Chess = require('./chessjs/chess').Chess;" > gen_fen
-echo "var chess = new Chess();" >> gen_fen
+sed -n 13p history.txt > last_fen
+check_position
+
+
+
+}
+
+stockfish_white() {
+
+if [[ $white == false ]]; then
+
+printf "%s \e[1;77mYou Turn: \e[0m" $turn
+read move
+echo $move >> move_history
+
+
+else
+
+IFS=$'\n'
+fen=$(echo $(cat last_fen ))
+#depth="20"
+#go depth ${depth}
+#setoption name Debug Log File value log
+move=$((cat <<EOF
+setoption name Skill Level value ${white_level}
+position fen ${fen}
+go 
+EOF
+sleep 1) | $stockpath | grep 'bestmove' | cut -d ' ' -f2 )
+
+printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n\n" $move
+echo $move >> move_history
+
+fi 
+
+echo "var Chess = require('./chessjs/chess').Chess;" > history_pgn
+echo "var chess = new Chess();" >> history_pgn
 
 for position in $(cat move_history); do
-printf "chess.move('%s', {sloppy: true});\n" $position >> gen_fen
+printf "chess.move('%s', {sloppy: true});\n" $position >> history_pgn
 done
-echo "console.log(chess.fen());" >> gen_fen
-node gen_fen > last_fen
+echo "console.log(chess.ascii());" >> history_pgn
+echo "console.log(chess.fen());" >> history_pgn
+
+##
+echo "console.log(chess.in_check());" >> history_pgn
+echo "console.log(chess.in_checkmate());" >> history_pgn
+echo "console.log(chess.in_stalemate());" >> history_pgn
+echo "console.log(chess.insufficient_material());" >> history_pgn
+echo "console.log(chess.in_threefold_repetition());" >> history_pgn
+#echo "console.log(chess.in_draw());" >> history_pgn
+
+node history_pgn > history.txt
+table
+sed -n 13p history.txt > last_fen
 
 check_position
 
+}
+
+stockfish_black() {
+if [[ $white == true ]]; then
+
+printf "%s \e[1;77mYou Turn: \e[0m" $turn
+read move
+echo $move >> move_history
+
+else
+IFS=$'\n'
+fen=$(echo $(cat last_fen ))
+#setoption name Debug Log File value log
+move=$((cat <<EOF
+setoption name Skill Level value ${black_level}
+position fen ${fen}
+go
+EOF
+sleep 1) | $stockpath | grep 'bestmove' | cut -d ' ' -f2 )
+#go depth 20 movetime 4000
+printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n\n" $move
+echo $move >> move_history
+
+fi 
+
+echo "var Chess = require('./chessjs/chess').Chess;" > history_pgn
+echo "var chess = new Chess();" >> history_pgn
+
+for position in $(cat move_history); do
+printf "chess.move('%s', {sloppy: true});\n" $position >> history_pgn
+done
+echo "console.log(chess.ascii());" >> history_pgn
+echo "console.log(chess.fen());" >> history_pgn
+##
+echo "console.log(chess.in_check());" >> history_pgn
+echo "console.log(chess.in_checkmate());" >> history_pgn
+echo "console.log(chess.in_stalemate());" >> history_pgn
+echo "console.log(chess.insufficient_material());" >> history_pgn
+echo "console.log(chess.in_threefold_repetition());" >> history_pgn
+#echo "console.log(chess.in_draw());" >> history_pgn
+##
+node history_pgn > history.txt
+table
+sed -n 13p history.txt > last_fen
+check_position
+
+
+}
+
+stockfish_path() {
+chmod +x engine/Linux/*
+arch=$(arch)
+
+if [[ $arch == *'armv'* ]]; then
+chmod +x engine/Android/*
+stockpath="engine/Android/stockfish-10-armv7"
+
+elif [[ $arch == *'arm64v8'* ]]; then
+chmod +x engine/Android/*
+stockpath="engine/Android/stockfish-10-arm64v8"
+
+elif [[ $arch == *'arm64-pgo'* ]]; then
+chmod +x engine/Android/*
+stockpath="engine/Android/stockfish-10-arm64-pgo"
+
+elif [[ $arch == *'x86_64'* ]]; then
+chmod +x engine/Linux/*
+stockpath="engine/Linux/stockfish_10_x64"
+
+elif [[ $arch == *'64_bmi2'* ]]; then
+chmod +x engine/Linux/*
+stockpath="engine/Linux/stockfish_10_x64_bmi2"
+
+elif [[ $arch == *'64_modern'* ]]; then
+chmod +x engine/Linux/*
+stockpath="engine/Linux/stockfish_10_x64_modern"
+
+elif [[ $arch == *'686'* || $arch == *'386'* ]]; then
+
+printf "\e[1;93mBinaries not found. Compile from source?\e[0m \e[1;77m[Y/n]"
+read from_src
+
+if [[ $from_src == "Y" || $from_src == "y" ]]; then
+
+printf "\e[1;77mChecking dependencies\e[0m\n..."
+command -v gcc > /dev/null 2>&1 || { echo >&2 "I require gcc Compiler. Aborting."; exit 1; }
+printf "\e[1;77mDownloading\e[0m\n..."
+git clone https://github.com/official-stockfish/Stockfish
+cd Stockfish/src
+make build ARCH=x86-32 COMP=gcc
+cd ../../
+
+if [[ -e Stockfish/src/stockfish ]]; then
+chmod +x Stockfish/src/stockfish
+stockpath="Stockfish/src/stockfish"
+else
+printf "\e[1;93mError, file not found\e[0m\n"
+exit 1
+fi
+else
+exit 1
+fi
+
+else
+
+printf "\e[1;93mStockFish not Found\n"
+exit 1
+fi
 
 
 }
@@ -578,17 +719,17 @@ start() {
 touch last_fen
 rm -rf move_history
 printf "\n"
-printf "\e[1;93mStockFish Engine (Online)\n\n"
-printf "\e[1;93m1.\e[0m\e[1;77m White\e[0m \u2654\n"
-printf "\e[1;93m2.\e[0m\e[1;77m Black\e[0m \u265A\n"
-printf "\e[1;93m3.\e[0m\e[1;77m Random\e[0m \u2654 \u265A\n"
-printf "\e[1;93m4.\e[0m\e[1;77m AI x AI\e[0m\n"
+printf "\e[1;93mStockFish Engine (Offline)     StockFish 10 (Online)\n\n"
+printf "\e[1;93m01.\e[0m\e[1;77m White\e[0m \u2654                     \e[1;93m05.\e[0m\e[1;77m White\e[0m \u2654\n"
+printf "\e[1;93m02.\e[0m\e[1;77m Black\e[0m \u265A                     \e[1;93m06.\e[0m\e[1;77m Black\e[0m \u265A\n"
+printf "\e[1;93m03.\e[0m\e[1;77m Random\e[0m \u2654 \u265A                  \e[1;93m07.\e[0m\e[1;77m Random\e[0m \u2654 \u265A\n"
+printf "\e[1;93m04.\e[0m\e[1;77m AI x AI\e[0m                     \e[1;93m08.\e[0m\e[1;77m AI x AI\e[0m\n"
 
-printf "\n\e[1;93mMiniMax-Alpha Engine (Offline) \e[0m\n\n"
+printf "\n\e[1;93mMiniMax Alpha-Beta JavaScript Engine (Offline) \e[0m\n\n"
 
-printf "\e[1;93m5.\e[0m\e[1;77m White\e[0m \u2654\n"
-printf "\e[1;93m6.\e[0m\e[1;77m Black\e[0m \u265A\n"
-printf "\e[1;93m7.\e[0m\e[1;77m AI x AI\e[0m\n"
+printf "\e[1;93m09.\e[0m\e[1;77m White\e[0m \u2654\n"
+printf "\e[1;93m10.\e[0m\e[1;77m Black\e[0m \u265A\n"
+printf "\e[1;93m11.\e[0m\e[1;77m AI x AI\e[0m\n"
 printf "\n"
 printf "\e[1;93m99. Help\e[0m\n"
 
@@ -598,7 +739,7 @@ printf "\n\e[1;77mChoose: \e[0m"
 read color
 
 # WHITE 
-if [[ $color -eq 1 ]]; then
+if [[ $color -eq 5 ]]; then
 first_move=true
 
 table
@@ -617,7 +758,7 @@ done
 
 # BLACK
 
-elif [[ $color -eq 2 ]]; then
+elif [[ $color -eq 6 ]]; then
 printf "\n\u2654 \e[1;93mWhite begins, please wait...\e[0m\n"
 white=true
 
@@ -637,7 +778,7 @@ black
 done
 
 
-elif [[ $color -eq 3 ]]; then
+elif [[ $color -eq 7 ]]; then
 
 choice=$((RANDOM%2))
 
@@ -677,7 +818,7 @@ $second
 done
 
 
-elif [[ $color -eq 4 ]]; then
+elif [[ $color -eq 8 ]]; then
 
 echo "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" > last_fen
 
@@ -709,7 +850,7 @@ read back
 start
 
 #
-elif [[ $color -eq 7 ]]; then
+elif [[ $color -eq 11 ]]; then #minimax ai x ai
 
 default_level="3"
 printf "\e[1;93mLevel\e[0m\e[1;77m (1-3): \e[0m"
@@ -724,9 +865,7 @@ engine_black
 done
 
 #
-
-#
-elif [[ $color -eq 5 ]]; then
+elif [[ $color -eq 9 ]]; then #minimax black
 default_level="1"
 printf "\e[1;93mLevel\e[0m\e[1;77m (1-3): \e[0m"
 read level
@@ -748,7 +887,28 @@ engine_white
 done
 
 #
+elif [[ $color -eq 10 ]]; then
+default_level="1"
+printf "\e[1;93mLevel\e[0m\e[1;77m (1-3): \e[0m"
+read level
+level="${level:-${default_level}}"
+printf "\n\u2654 \e[1;93mWhite begins, please wait...\e[0m\n"
+white=true
 
+echo "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" > last_fen
+
+while [ true ]; do
+
+gturn=$(cat last_fen | cut -d ' ' -f2)
+
+if [[ $gturn == *'w'* ]]; then
+turn=$(echo -e '\u265A')
+else
+turn=$(echo -e '\u2654')
+fi
+engine_white
+engine_black
+done
 #
 
 elif [[ $color -eq 6 ]]; then
@@ -771,12 +931,142 @@ turn=$(echo -e '\u265A')
 else
 turn=$(echo -e '\u2654')
 fi
-engine_white
-engine_black
+white
+black
+done
+
+#
+elif [[ $color -eq 4 ]]; then # stockfish random
+
+printf "\e[1;93mAI White Level (1-20): \e[0m"
+read white_level
+printf "\e[1;93mAI Black Level (1-20): \e[0m"
+read black_level
+
+
+echo "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" > last_fen
+stockfish_path
+while [ true ]; do
+
+stockfish_white
+stockfish_black
+done
+#
+elif [[ $color -eq 2 ]]; then # stockfish black
+stockfish_path
+default_white_level="3"
+default_black_level="3"
+printf "\e[1;93mAI White Level (1-20): \e[0m"
+read white_level
+printf "\e[1;93mAI Black Level (1-20): \e[0m"
+read black_level
+
+
+white_level="${white_level:-${default_level}}"
+black_level="${black_level:-${default_level}}"
+
+printf "\n\u2654 \e[1;93mWhite begins, please wait...\e[0m\n"
+white=true
+
+echo "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" > last_fen
+
+while [ true ]; do
+
+gturn=$(cat last_fen | cut -d ' ' -f2)
+
+if [[ $gturn == *'w'* ]]; then
+turn=$(echo -e '\u265A')
+else
+turn=$(echo -e '\u2654')
+fi
+stockfish_white
+stockfish_black
 done
 
 
 #
+elif [[ $color -eq 1 ]]; then
+stockfish_path
+first_move=true
+
+default_white_level="3"
+default_black_level="3"
+printf "\e[1;93mAI White Level (1-20): \e[0m"
+read white_level
+printf "\e[1;93mAI Black Level (1-20): \e[0m"
+read black_level
+
+table
+white=true
+
+while [ true ]; do
+gturn=$(cat last_fen | cut -d ' ' -f2)
+if [[ $gturn == *'b'* ]]; then
+turn=$(echo -e '\u265A')
+else
+turn=$(echo -e '\u2654')
+fi
+stockfish_black
+stockfish_white
+done
+
+#
+
+elif [[ $color -eq 3 ]]; then
+
+stockfish_path
+choice=$((RANDOM%2))
+
+if [[ $choice -eq 0 ]]; then
+printf "\e[1;93mYou:\e[0m\e[1;77m White\e[0m\n"
+default_white_level="3"
+default_black_level="3"
+printf "\e[1;93mAI White Level (1-20): \e[0m"
+read white_level
+printf "\e[1;93mAI Black Level (1-20): \e[0m"
+read black_level
+
+white=true
+first_move=true
+table
+first=stockfish_black
+second=stockfish_white
+
+else
+white=true
+printf "\e[1;93mYou:\e[0m\e[1;77m Black\e[0m\n"
+default_white_level="3"
+default_black_level="3"
+printf "\e[1;93mAI White Level (1-20): \e[0m"
+read white_level
+printf "\e[1;93mAI Black Level (1-20): \e[0m"
+read black_level
+
+first=stockfish_white
+second=stockfish_black
+echo "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" > last_fen
+fi
+
+while [ true ]; do
+
+gturn=$(cat last_fen | cut -d ' ' -f2)
+
+if [[ $gturn == *'b'* ]]; then
+turn=$(echo -e '\u265A')
+else
+turn=$(echo -e '\u2654')
+fi
+
+$first
+if [[ $gturn == *'w'* ]]; then
+turn=$(echo -e '\u265A')
+else
+turn=$(echo -e '\u2654')
+fi
+$second
+done
+
+
 elif [[ $color -eq 0 ]]; then
 exit 1
 fi
