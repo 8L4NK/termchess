@@ -1,5 +1,5 @@
 #!/bin/bash
-# TermChess v1.3
+# TermChess v1.4
 # Coded by @linux_choice
 # https://github.com/thelinuxchoice/termchess
 trap 'printf "\n";pgn;exit 1' 2
@@ -13,7 +13,7 @@ printf "   | |  __/ |  | | | | | | |___| | | |  __/\__ \__ \ \n"
 printf "   |_|\___|_|  |_| |_| |_|\____|_| |_|\___||___/___/ \e[0m\n"
 printf "\n"
 
-printf "    \e[1;77mv1.3 by: github.com/thelinuxchoice/termchess\e[0m\n"
+printf "    \e[1;77mv1.4 by: github.com/thelinuxchoice/termchess\e[0m\n"
 printf "\n"
 
 
@@ -194,12 +194,33 @@ fi
 
 printf "    %s %s %s %s %s\n" $Queen $Rook $Nnight $Bishop $Pawn
 
+if [[ ${#move} > 3 ]]; then
+from_char1=$(echo ${move:0:1})
+from_char2=$(echo ${move:1:1})
+to_char1=$(echo ${move:2:1})
+to_char2=$(echo ${move:3:3})
+to_char2_middle="char_mid"
+from_string1=$(printf "\e[33m%s\e[0m" $from_char1)
+from_string2=$(printf "\e[33m%s\e[0m" $from_char2)
 
+to_string1=$(printf "\e[1;93m%s\e[0m" $to_char1)
+to_string2=$(printf "\e[1;93m%s\e[0m" $to_char2)
+
+
+
+board_letter="     a  b  c  d  e  f  g  h "
+sed 's+K+'$K'+g' table | sed 's+k+'$k'+g' | sed 's+Q+'$Q'+g' | sed 's+q+'$q'+g' | sed 's+R+'$R'+g' | sed 's+r+'$r'+g' | sed 's+B+'$B'+g' | sed 's+b+'$b'+g' | sed 's+N+'$N'+g' | sed 's+n+'$n'+g' | sed 's+P+'$P'+g' | sed 's+p+'$p'+g' | sed 's+'$to_char2'+'$to_char2_middle'+g' | sed 's+'$from_char2'+'$from_string2'+g' | sed 's+char_mid+'$to_string2'+g' 
+#echo '     a  b  c  d  e  f  g  h '
+IFS=$'\n'
+board_char=$(echo "$board_letter" | sed 's+'$to_char1'+'$to_string1'+g' | sed 's+'$from_char1'+'$from_string1'+g')
+echo $board_char
+printf "\n"
+else
 # Table
-sed 's+K+'$K'+g' table | sed 's+k+'$k'+g' | sed 's+Q+'$Q'+g' | sed 's+q+'$q'+g' | sed 's+R+'$R'+g' | sed 's+r+'$r'+g' | sed 's+B+'$B'+g' | sed 's+b+'$b'+g' | sed 's+N+'$N'+g' | sed 's+n+'$n'+g' | sed 's+P+'$P'+g' | sed 's+p+'$p'+g'
+sed 's+K+'$K'+g' table | sed 's+k+'$k'+g' | sed 's+Q+'$Q'+g' | sed 's+q+'$q'+g' | sed 's+R+'$R'+g' | sed 's+r+'$r'+g' | sed 's+B+'$B'+g' | sed 's+b+'$b'+g' | sed 's+N+'$N'+g' | sed 's+n+'$n'+g' | sed 's+P+'$P'+g' | sed 's+p+'$p'+g' 
 echo '     a  b  c  d  e  f  g  h '
 printf "\n"
-
+fi
 
 # White Captures
 
@@ -305,37 +326,45 @@ checkmate=$(sed -n 15p history.txt)
 repetition=$(sed -n 18p history.txt)
 
 if [[ $checkmate == *'true'* ]]; then
-printf "\e[1;93mCheckMate!\e[0m\n"
+printf "\n\e[1;93mCheckMate!\e[0m "
+winner=$(cut -d ' ' -f2 last_fen)
+if [[ $winner == *'w'* ]]; then
+printf "\e[1;77mBlack Wins!\e[0m\n"
+else
+printf "\e[1;77mWhite Wins!\e[0m\n"
+fi
 echo -e '\a'; sleep 0.1 ; echo -e '\a'
+
+
 pgn
 exit 1
 fi
 
 if [[ $in_check == *'true'* ]]; then
-printf "\e[1;93mCheck!\e[0m\n"
+printf "\n\e[1;93mCheck!\e[0m\n"
 echo -e '\a'
 fi
 
 if [[ $in_stalemate == *'true'* ]]; then
-printf "\e[1;93mStalemate!\e[0m\n"
+printf "\n\e[1;93mStalemate!\e[0m\n"
 pgn
 exit 1
 fi
 
-if [[ $in_draw == *'true'* ]]; then
-printf "\e[1;93mDraw!\e[0m\n"
-pgn
-exit 1
-fi
+#if [[ $in_draw == *'true'* ]]; then
+#printf "\n\e[1;93mDraw!\e[0m\n"
+#pgn
+#exit 1
+#fi
 
 if [[ $insufficient == *'true'* ]]; then
-printf "\e[1;93mInsufficient Material!\e[0m\n"
+printf "\n\e[1;93mInsufficient Material!\e[0m\n"
 pgn
 exit 1
 fi
 
 if [[ $repetition == *'true'* ]]; then
-printf "\e[1;93mRepetition, Draw!\e[0m\n"
+printf "\n\e[1;93mRepetition, Draw!\e[0m\n"
 pgn
 exit 1
 fi
@@ -367,8 +396,12 @@ fi
 echo $move >> move_history
 fi
 
-
-printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n\n" $move
+if [[ $(cut -d ' ' -f2 last_fen) == *'w'* ]]; then
+last_turn="White"
+else
+last_turn="Black"
+fi
+printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m \e[1;77m(%s\e[0m)\n\n" $move $last_turn
 
 echo "var Chess = require('./chessjs/chess').Chess;" > history_pgn
 echo "var chess = new Chess();" >> history_pgn
@@ -418,7 +451,13 @@ move=$(grep -o '"move":"[a-zA-Z0-9]\{5\}' next_move | cut -d ':' -f2 | tr -d '"'
 if [[ $move == "" ]]; then
 move=$(grep -o '"move":"[a-zA-Z0-9]\{4\}' next_move | cut -d ':' -f2 | tr -d '"')
 fi
-printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n\n" $move
+if [[ $(cut -d ' ' -f2 last_fen) == *'w'* ]]; then
+last_turn="White"
+else
+last_turn="Black"
+fi
+printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m \e[1;77m(%s\e[0m)\n\n" $move $last_turn
+
 echo $move >> move_history
 
 fi 
@@ -465,7 +504,13 @@ fen=$(echo $(cat last_fen ))
 sed 's+get_fen+'$fen'+g' alpha.js | sed 's+get_level+'$level'+g' > engine1.js 
 move=$(node engine1.js) #>> move_history
 
-printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n\n" $move
+if [[ $(cut -d ' ' -f2 last_fen) == *'w'* ]]; then
+last_turn="White"
+else
+last_turn="Black"
+fi
+printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m \e[1;77m(%s\e[0m)\n\n" $move $last_turn
+
 echo $move >> move_history
 
 fi 
@@ -517,7 +562,13 @@ fen=$(echo $(cat last_fen ))
 sed 's+get_fen+'$fen'+g' alpha.js | sed 's+get_level+'$level'+g' > engine1.js 
 move=$(node engine1.js)
 
-printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n\n" $move
+if [[ $(cut -d ' ' -f2 last_fen) == *'w'* ]]; then
+last_turn="White"
+else
+last_turn="Black"
+fi
+printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m \e[1;77m(%s\e[0m)\n\n" $move $last_turn
+
 echo $move >> move_history
 
 fi 
@@ -574,7 +625,13 @@ go
 EOF
 sleep 1) | $stockpath | grep 'bestmove' | cut -d ' ' -f2 )
 
-printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n\n" $move
+if [[ $(cut -d ' ' -f2 last_fen) == *'w'* ]]; then
+last_turn="White"
+else
+last_turn="Black"
+fi
+printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m \e[1;77m(%s\e[0m)\n\n" $move $last_turn
+
 echo $move >> move_history
 
 fi 
@@ -622,7 +679,13 @@ go
 EOF
 sleep 1) | $stockpath | grep 'bestmove' | cut -d ' ' -f2 )
 #go depth 20 movetime 4000
-printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m\n\n" $move
+if [[ $(cut -d ' ' -f2 last_fen) == *'w'* ]]; then
+last_turn="White"
+else
+last_turn="Black"
+fi
+printf "\n\e[1;77mLast move: \e[0m\e[1;93m%s\e[0m \e[1;77m(%s\e[0m)\n\n" $move $last_turn
+
 echo $move >> move_history
 
 fi 
@@ -653,7 +716,7 @@ check_position
 
 stockfish_path() {
 chmod +x engine/Linux/*
-arch=$(uname -m)
+arch=$(arch)
 
 if [[ $arch == *'armv'* ]]; then
 chmod +x engine/Android/*
@@ -719,7 +782,7 @@ start() {
 touch last_fen
 rm -rf move_history
 printf "\n"
-printf "\e[1;93mStockFish Engine (Offline)     StockFish 10 (Online)\n\n"
+printf "\e[1;93mStockFish Engine (AI Offline)     StockFish 10 (AI Online)\n\n"
 printf "\e[1;93m01.\e[0m\e[1;77m White\e[0m \u2654                     \e[1;93m05.\e[0m\e[1;77m White\e[0m \u2654\n"
 printf "\e[1;93m02.\e[0m\e[1;77m Black\e[0m \u265A                     \e[1;93m06.\e[0m\e[1;77m Black\e[0m \u265A\n"
 printf "\e[1;93m03.\e[0m\e[1;77m Random\e[0m \u2654 \u265A                  \e[1;93m07.\e[0m\e[1;77m Random\e[0m \u2654 \u265A\n"
