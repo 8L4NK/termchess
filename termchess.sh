@@ -194,7 +194,7 @@ fi
 
 printf "    %s %s %s %s %s\n" $Queen $Rook $Nnight $Bishop $Pawn
 
-if [[ ${#move} > 3 ]]; then
+if [[ ${#move} == 4 && ${move:3:3} != *'+'* ]]; then
 from_char1=$(echo ${move:0:1})
 from_char2=$(echo ${move:1:1})
 to_char1=$(echo ${move:2:1})
