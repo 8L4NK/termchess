@@ -501,7 +501,7 @@ else
 IFS=$'\n'
 fen=$(echo $(cat last_fen ))
 
-sed 's+get_fen+'$fen'+g' alpha.js | sed 's+get_level+'$level'+g' > engine1.js 
+sed 's+get_fen+'$fen'+g' alpha.js | sed 's+get_level+'$level'+g' | sed 's+get_piece+'$get_piece'+g' > engine1.js 
 move=$(node engine1.js) #>> move_history
 
 if [[ $(cut -d ' ' -f2 last_fen) == *'w'* ]]; then
@@ -559,7 +559,7 @@ else
 
 IFS=$'\n'
 fen=$(echo $(cat last_fen ))
-sed 's+get_fen+'$fen'+g' alpha.js | sed 's+get_level+'$level'+g' > engine1.js 
+sed 's+get_fen+'$fen'+g' alpha.js | sed 's+get_level+'$level'+g' | sed 's+get_piece+'$get_piece'+g' > engine1.js 
 move=$(node engine1.js)
 
 if [[ $(cut -d ' ' -f2 last_fen) == *'w'* ]]; then
@@ -922,14 +922,16 @@ level="${level:-${default_level}}"
 echo "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" > last_fen
 
 while [ true ]; do
-
+get_piece="b"
 engine_white
+get_piece="w"
 engine_black
 done
 
 #
 elif [[ $color -eq 9 ]]; then #minimax black
 default_level="1"
+get_piece="w"
 printf "\e[1;93mLevel\e[0m\e[1;77m (1-3): \e[0m"
 read level
 level="${level:-${default_level}}"
@@ -952,6 +954,7 @@ done
 #
 elif [[ $color -eq 10 ]]; then
 default_level="1"
+get_piece="b"
 printf "\e[1;93mLevel\e[0m\e[1;77m (1-3): \e[0m"
 read level
 level="${level:-${default_level}}"

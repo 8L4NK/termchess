@@ -173,8 +173,8 @@ var getPieceValue = function (piece, x, y) {
         throw "Unknown piece type: " + piece.type;
     };
 
-    var absoluteValue = getAbsoluteValue(piece, piece.color === 'w', x ,y);
-    return piece.color === 'w' ? absoluteValue : -absoluteValue;
+    var absoluteValue = getAbsoluteValue(piece, piece.color === 'get_piece', x ,y);
+    return piece.color === 'get_piece' ? absoluteValue : -absoluteValue;
 };
 
 
